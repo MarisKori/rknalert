@@ -7,11 +7,12 @@ function add(info) {
 
 let save_ip; //={}
 function show_ip_list() {
-	let cnt=0;
+	/*let cnt=0;
 	for(let ip in save_ip.ip) {
 		cnt++;
 		if (cnt>1)break;
-	}
+	}*/
+	//background.console.log('show_ip_list');
 	let hint = background.icon_hint;
 	let html = '';
 	let is_proxy;
@@ -26,7 +27,7 @@ function show_ip_list() {
 			if (ip == hint.ip) is_proxy = background.known_proxy_ip[ip];
 		}
 		line = '<b>'+line+'</b>';
-		if (ip == hint.ip && cnt > 1) {
+		if (ip == hint.ip) {
 			line += " (текущий)";
 		}
 		html += line + '<br>';
@@ -39,6 +40,7 @@ function show_ip_list() {
 }
 
 function update_dns_records(rec) {
+	//background.console.log('update_dns_records',rec);
 	for(let ip in rec.ip) {
 		let status = rec.ip[ip];
 		if (save_ip.ip[ip]) continue;
@@ -91,24 +93,26 @@ function popup_update() {
 	else add('Это вообще не сайт.');
 	if (hint.text) add(hint.text);
 	//info about ip
+	html+='<span id="dns_ip"></span>';
 	if (hint.ip_info) { //list of ips
-		html+='<span id="dns_ip"></span>';
 		let info = hint.ip_info;
-		save_ip = {ip:info.ip, dns:{}};
+		save_ip = {ip:info.ip};
 		setTimeout(show_ip_list,0);
-		let is_red;
+		/*let is_red;
 		for (let ip in info.ip) {
 			if (ip == hint.ip && info.ip[ip] == 2) {
 				is_red = true;
 				break;
 			}
-		}
-		if ((info.is_error || is_red) && background.localStorage.use_httpdns == 1 && first_time) { //check dns records
-			//background.console.log('check dns');
-			update_dns_timer = setTimeout(function(){
-				background.getDNS(hint.hostname, update_dns_records);
-			},0); //next tick
-		}
+		}*/
+		//if (info.is_error || is_red)
+	}
+	else save_ip = {ip:{}};
+	if (background.localStorage.use_httpdns == 1 && first_time) { //check dns records
+		//background.console.log('check dns');
+		update_dns_timer = setTimeout(function(){
+			background.getDNS(hint.hostname, update_dns_records);
+		},0); //next tick
 	}
 	if (hint.reason) {
 		add('<b>Причина:</b>');
