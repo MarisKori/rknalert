@@ -13,6 +13,7 @@ function get_ip_list() {
 	let proxy_index;
 	for(let ip in hint.ip_arr) {
 		if (ip == hint.hostname) continue;
+		if (hint.reason_ip && ip == hint.reason_ip.mask) continue;
 		let line = ip;
 		let status = hint.ip_arr[ip];
 		if (status == 1) line = '<font color="#ff8e00">'+line+'</font>';
@@ -63,7 +64,10 @@ function popup_update() {
 		if (background.localStorage.check_site_is_online==1) {
 			is_up_status = ' <img src="/images/loading_16.gif">';
 		}
-		add("<b><span"+(hint.domain_blocked?' class=red':'')+">"
+		let style = '';
+		if (hint.domain_blocked) style=' class=red';
+		else if (hint.is_ip_blocked > 1) style = ' class=green';
+		add("<b><span"+style+">"
 			+ hint.hostname + '</span><span id="check_site_result">'+is_up_status+'</span></b>');
 	}
 	//date when was blocked by RKN
@@ -88,7 +92,7 @@ function popup_update() {
 		if (!hint.reason || hint.reason.postanovlenie != reason.postanovlenie ) {
 			add('<b>Блокировка по ip:</b>');
 			if (reason.mask) {
-				add("<font color=red>"+reason.mask+"</font>");
+				add("Подсеть: <font color=red>"+reason.mask+"</font>");
 			}
 			add("Гос. орган: <b>"+reason.gos_organ+"</b>");
 			add("Постановление: <b>"+reason.postanovlenie+"</b>");
