@@ -46,6 +46,7 @@ function add(info) {
 
 function options_update() {
 	let options = background.options_hint;
+	if (!options) return console.log('Warning: no options.');
 	html = '';
 	if (options.db_size) add('Размер базы: ' + options.db_size);
 	if (options.update_records) add('Записей в базе: ' + options.update_records);
