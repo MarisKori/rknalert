@@ -30,7 +30,14 @@ function check_if_is_online(hostname, callback_update_site_status) {
 	//console.log("check is online",hostname);
 	if (is_up_cache[hostname]) {
 		let now = (new Date()).getTime();
-		if (now - is_up_cache[hostname].time < 30000) return is_up_cache[hostname].result;
+		if (now - is_up_cache[hostname].time < 30000) {
+			setTimeout(()=>{ 
+				try {
+					callback_update_site_status({hostname:hostname, result:is_up_cache[hostname].result});
+				} catch(e) {}
+			},0);
+			return
+		}
 	}
 	let xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
@@ -51,7 +58,7 @@ function check_if_is_online(hostname, callback_update_site_status) {
 				result: result,
 			}
 			try {
-				callback_update_site_status(result);
+				callback_update_site_status({hostname:hostname,result:result});
 			} catch(e) {
 				//window dead (firefox)
 			}
@@ -66,13 +73,18 @@ function check_if_is_online(hostname, callback_update_site_status) {
 if (localStorage.httpdns === undefined) localStorage.httpdns = 0;
 
 let dns_cache = {}
+function getDnsCached(domain) {
+	if(!domain)return;
+	let now = (new Date()).getTime();
+	let rec = dns_cache[domain];
+	if (rec && (now - rec.time < 360000*2)) return rec;
+}
 function getDNS(domain,callback) {
 	//if (!callback) callback=updateIcon;
 	//console.log('getDNS',domain);
 	if(!domain)return;
-	let now = (new Date()).getTime();
 	let rec = dns_cache[domain];
-	if (rec && (now - rec.time < 360000*2)) return callback(rec); //let other users use this free service
+	let now = (new Date()).getTime();
 	let xhr = new XMLHttpRequest();
 	if (localStorage.httpdns == 2) { //dns-api.org
 		xhr.onreadystatechange = function() {
@@ -89,12 +101,14 @@ function getDNS(domain,callback) {
 						dns_cache[domain]=rec;
 					}
 					rec.ip = {};
+					rec.reason = {};
 					rec.time = now;
 					//if (!arr.length) return; //keep empty record in cache. Don't update it until timeout.
 					for(let i=0;i<arr.length;i++) {
 						let ip = arr[i].value;
 						if (ip && arr[i].type == "A") {
 							rec.ip[ip] = check_ip(ip);
+							if (rec.ip[ip] == 2) rec.reason[ip] = blocked_ip_reason;
 						}
 					}
 					callback(rec);
@@ -117,11 +131,13 @@ function getDNS(domain,callback) {
 						dns_cache[domain]=rec;
 					}
 					rec.ip = {};
+					rec.reason = {};
 					rec.time = now;
 					//if (!arr.length) return; //keep empty record in cache. Don't update it until timeout.
 					for(let i=0;i<arr.length;i++) {
 						let ip = arr[i];
 						rec.ip[ip] = check_ip(ip);
+						if (rec.ip[ip] == 2) rec.reason[ip] = blocked_ip_reason;
 					}
 					callback(rec);
 				} catch(e) {
@@ -143,16 +159,19 @@ function getDNS(domain,callback) {
 						dns_cache[domain]=rec;
 					}
 					rec.ip = {};
+					rec.reason = {};
 					rec.time = now;
 					//if (!arr.length) return; //keep empty record in cache. Don't update it until timeout.
 					for(let i=0;i<arr.length;i++) {
 						let ip = arr[i].data;
 						if (arr[i].type == 1) {
 							rec.ip[ip] = check_ip(ip);
+							if (rec.ip[ip] == 2) rec.reason[ip] = blocked_ip_reason;
 						}
 					}
 					callback(rec);
 				} catch(e) {
+					//console.log(e,xhr.responseText);
 				}
 			}
 		};
@@ -174,6 +193,7 @@ var known_proxy_ip = {
 }
 function check_proxy_ip() {
 	getDNS('proxy.antizapret.prostovpn.org',function(rec){
+		//dont remove old ips
 		for(let ip in rec.ip) known_proxy_ip[ip] = 1;
 	})
 }
@@ -330,8 +350,9 @@ var permanently_blocked = {
 	'kinogo.co':1, 'bobfilm.net':1, 'dream-film.net':1, 'kinokubik.com':1, 'kinozal.tv':1,
 	'kinobolt.ru':1, 'rutor.org':1, 'seedoff.net':1, 'torrentor.net':1, 'tushkan.net':1,
 	'tvserial-online.net':1, 'wood-film.ru':1, 'kinovo.tv':1, 'bigcinema.tv':1,
-	'rutracker.org':1,
+	'rutracker.org':1,'rutracker.net':1,'rutracker.cr':1,'rutracker.nl':1,
 	'nnm-club.me':1,
+	'rutor.info':1, 'rutor.is':1,
 }
 
 //----------------------------- MANAGE ICON -----------------------------
@@ -414,16 +435,17 @@ function updateIcon(url, tabId) {
 	url = parseStub(url, tabId);
 	//chrome.browserAction.setIcon({imageData:canvasContext.getImageData(0, 0, canvas.width,canvas.height)});
 	icon_hint = {}; //reset icon info.
+	chrome.browserAction.setTitle({title:"RKN Alert",tabId:tabId});
 	chrome.browserAction.setBadgeText({text:""});
 	//console.log("url:",url);
 	if (!url) {
 		chrome.browserAction.setIcon({path: "images/circ_gray_gray_16.png"});
-		return windows_update();
+		return popup_update();
 	}
 	if (url.substr(0,4) != "http" && url.indexOf('//') > -1) { // && url.substr(0,5) != "https"
 		chrome.browserAction.setIcon({path: "images/circ_gray_gray_16.png"});
 		//console.log(icon_hint);
-		return windows_update();
+		return popup_update();
 	}
 	if (tabId && !is_bad_url) saved_last_url[tabId] = url;
 	
@@ -431,37 +453,71 @@ function updateIcon(url, tabId) {
 	
 	if (arr_special_url[domain]) { // about:addons in FireFox
 		chrome.browserAction.setIcon({path: "images/circ_gray_gray_16.png"});
-		return windows_update();
+		return popup_update();
 	}
 	
 	if (domain=='localhost') icon_hint.is_whitelist_ip_local = true;
 
-	options_hint.urls = undefined;
-	options_hint.domain = undefined;
-	options_update();
+	if (options_hint.urls || options_hint.domain) {
+		options_hint.urls = undefined;
+		options_hint.domain = undefined;
+		options_update();
+	}
 	
 	if (permanently_blocked[domain]) icon_hint.permanently_blocked = true;
 	
 	icon_hint.hostname = decode_domain(real_domain);
+	icon_hint.real_domain = real_domain;
+	icon_hint.ip_arr = {};
 	let ip, info = save_info_ip[real_domain];
+	let is_ip_blocked = 0;
 	//console.log("info",tabId,info);
 	if (info && tabId) {
 		ip = info.tab_ip[tabId];
-		icon_hint.ip_info = info;
+		if(ip) icon_hint.reason_ip = info.reason[ip];
+		if (info.ip[ip] == 2) is_ip_blocked = 2;
+		for(let ip in info.ip) icon_hint.ip_arr[ip] = info.ip[ip]; //copy object
 	}
 	else if (/^\d+\.\d+\.\d+\.\d+$/.test(domain)) {
 		ip = domain;
-		icon_hint.ip_info = save_info_ip[ip];
+		console.log('Error ip not updated:',ip,info);
+		icon_hint.ip_arr[ip] = check_ip(ip);
+		if (icon_hint.ip_arr[ip] == 2) is_ip_blocked = 2;
+		icon_hint.reason_ip = blocked_ip_reason;
+		//if(info) for(let ip in info.ip) icon_hint.ip_arr[ip] = info.ip[ip]; //copy object. Never happens
 	}
 	//if (!ip && extracted_blocked_ip) ip = extracted_blocked_ip; //info from provider!..
 	if (ip) {
 		icon_hint.ip = ip;
-		if (!info) info = {ip:{[ip]:check_ip(ip)},reason:{[ip]:blocked_ip_reason}};
-		icon_hint.ip_info = info;
 		//ip in whitelist?
 		if (whitelist.ip[ip] || isIp4InCidrs(ip,whitelist.ip_range)) icon_hint.is_whitelist_ip = true;
 		if (isIp4InCidrs(ip,whitelist_ip_local_arr)) icon_hint.is_whitelist_ip_local = true;
 	}
+	if (icon_hint.reason_ip && icon_hint.reason_ip.mask) {
+		icon_hint.ip_arr[icon_hint.reason_ip.mask] = 2;
+		is_ip_blocked = 3;
+	}
+	//check dns
+	let dns = getDnsCached(real_domain);
+	if (dns) {
+		for(let ip in dns.ip) {
+			if (icon_hint.ip_arr[ip] === undefined) {
+				icon_hint.ip_arr[ip] = dns.ip[ip] == 0 ? 5 : dns.ip[ip];
+				if (dns.ip[ip] > is_ip_blocked) is_ip_blocked = dns.ip[ip];
+			}
+			if (dns.reason[ip]) {
+				if (dns.reason[ip].mask) {
+					icon_hint.ip_arr[dns.reason[ip].mask] = 2;
+					is_ip_blocked = 3;
+				}
+				if (!icon_hint.reason_ip) {
+					icon_hint.reason_ip = dns.reason[ip];
+				}
+			}
+		}
+	}
+	
+	icon_hint.is_ip_blocked = is_ip_blocked;
 	
 	//domain in white list?
 	if (whitelist.domain[domain] || test_domain_mask(domain,whitelist.domain_mask)) icon_hint.is_whitelist_domain = true;
@@ -475,15 +531,17 @@ function updateIcon(url, tabId) {
 			chrome.browserAction.setIcon({path: "images/circ_pink_red_16.png"});
 			icon_hint.date = database.blocked_mask[test_domain];
 			icon_hint.text = "Заблокирована группа доменов *." + test_domain;
+			chrome.browserAction.setTitle({title:"*." + test_domain,tabId:tabId});
 			icon_hint.reason = database.blocked_mask_reason[test_domain];
-			return windows_update();
+			return popup_update();
 		}
 		let is_whitelist = icon_hint.is_whitelist_domain || icon_hint.is_whitelist_ip || icon_hint.is_whitelist_ip_local;
 		//Check blocked ip
-		if (ip && info.ip[ip] > 0) {
-			let status = info.ip[ip];
+		if (ip && icon_hint.ip_arr[ip] > 0) {
+			let status = icon_hint.ip_arr[ip];
 			if (status == 2) {
 				icon_hint.text = "Сайт заблокирован по ip";
+				chrome.browserAction.setTitle({title:"ip " + ip,tabId:tabId});
 				chrome.browserAction.setIcon({path: "images/circ_yellow_red_16.png"});
 			}
 			else if (status == 1) {
@@ -492,10 +550,31 @@ function updateIcon(url, tabId) {
 					//in whitelist (ignore status 1):
 					chrome.browserAction.setIcon({path: "images/circ_whitelist_16.png"});
 				else
+					chrome.browserAction.setTitle({title:"Не должно быть блокировки",tabId:tabId});
 					chrome.browserAction.setIcon({path: "images/circ_green_yellow_16.png"});
 			}
 			else chrome.browserAction.setIcon({path: "images/circ_unknown_16.png"});
-			return windows_update();
+			return popup_update();
+		}
+		//Check block of the site by ip
+		if (!ip && is_ip_blocked) {
+			if (is_ip_blocked === 3) {
+				icon_hint.text = "Заблокирована целая подсеть.";
+				chrome.browserAction.setTitle({title:"Ковровая блокировка",tabId:tabId});
+				chrome.browserAction.setIcon({path: "images/circ_yellow_red_16.png"});
+			} else if (is_ip_blocked === 2) {
+				icon_hint.text = "Блокировка по ip";
+				chrome.browserAction.setTitle({title:"Блокировка по ip",tabId:tabId});
+				chrome.browserAction.setIcon({path: "images/circ_yellow_red_16.png"});
+			} else if (is_ip_blocked === 1) {
+				if (!icon_hint.is_whitelist_ip_local) icon_hint.text = "Некоторые провайдеры блокируют этот сайт по ip";
+				if (is_whitelist)
+					chrome.browserAction.setIcon({path: "images/circ_whitelist_16.png"});
+				else
+					chrome.browserAction.setIcon({path: "images/circ_green_yellow_16.png"});
+			}
+			else chrome.browserAction.setIcon({path: "images/circ_unknown_16.png"});
+			return popup_update();
 		}
 		//No block
 		if (is_whitelist) { //in whitelist:
@@ -503,7 +582,7 @@ function updateIcon(url, tabId) {
 		} else { //Green icon:
 			chrome.browserAction.setIcon({path: "images/circ_green_green_16.png"});
 		}
-		return windows_update();
+		return popup_update();
 	}
 	if (rec.urls.length > 0) {
 		chrome.browserAction.setBadgeText({text:""+rec.urls.length});
@@ -518,28 +597,50 @@ function updateIcon(url, tabId) {
 	if (database.blocked_url[find_url]) {
 		icon_hint.date = database.blocked_url[find_url];
 		icon_hint.reason = database.blocked_url_reason[find_url];
+		chrome.browserAction.setTitle({title:"Ссылка заблокирована",tabId:tabId});
 		if (rec.blocked) {
+			icon_hint.domain_blocked = true;
 			chrome.browserAction.setIcon({path: "images/circ_red_red_16.png"});
+			icon_hint.text = "URL и домен заблокированы.";
 		}
 		else {
 			chrome.browserAction.setIcon({path: "images/circ_red_white_16.png"});
 			icon_hint.text = "URL заблокирован, но домен разрешён.";
 		}
-		return windows_update();
+		return popup_update();
 	}
-	if (rec.blocked) {	
+	if (rec.blocked) {
+		icon_hint.domain_blocked = true;
 		if (!icon_hint.date) icon_hint.date = rec.date;
 		if (rec.postanovlenie && !icon_hint.reason) icon_hint.reason = {
 			postanovlenie: rec.postanovlenie,
 			gos_organ: rec.gos_organ,
 		};
 		chrome.browserAction.setIcon({path: "images/circ_pink_red_16.png"});
-		return windows_update();
+		chrome.browserAction.setTitle({title:"Домен заблокирован",tabId:tabId});
+		return popup_update();
 	}
 	//not blocked, but there are blocked URLs
 	chrome.browserAction.setIcon({path: "images/circ_orange_green_16.png"});
 	icon_hint.text = "На сайте есть заблокированные URL.";
-	windows_update();
+	popup_update();
+}
+
+function onPopupOpen(popup) {
+	//dns
+	if (localStorage.use_httpdns == 1
+		&& icon_hint.real_domain
+		&& icon_hint.real_domain != icon_hint.ip
+		&& !getDnsCached(icon_hint.real_domain))
+	{ 
+		getDNS(icon_hint.real_domain, (rec) => {
+			updateIcon();
+		});
+	}
+	//accessibility
+	if (localStorage.check_site_is_online == 1) {
+		check_if_is_online(icon_hint.real_domain, popup.update_site_status)
+	}
 }
 
 let is_icon_handlers;
@@ -1078,6 +1179,10 @@ function update_Database(csv, no_save) {
 					let ip = arr_ip[i];
 					if (ip.indexOf('/') > -1) database.blocked_ip_range.push(ip);
 					else database.blocked_ip[ip] = true;
+					database.blocked_ip_reason[ip] = {
+						postanovlenie: postanovlenie,
+						gos_organ: gos_organ,
+					}
 					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.warn('Bad ip:',ip);
 				}
 			}
@@ -1484,6 +1589,7 @@ const isIp4InCidr = ip => cidr => {
 	const mask = ~(2 ** (32 - bits) - 1);
 	if ((ip4ToInt(ip) & mask) === (ip4ToInt(range) & mask)) {
 		blocked_ip_reason = database.blocked_ip_reason[cidr];
+		console.log(cidr);
 		if (blocked_ip_reason) blocked_ip_reason.mask = cidr;
 		return true;  
 	}
