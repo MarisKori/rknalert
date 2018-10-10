@@ -110,8 +110,10 @@ function lookup_provider_stub_input() {
 
 document.addEventListener('DOMContentLoaded', function () {
 	document.getElementById("upd_button").addEventListener("click", update_now);
+	
 	let frequency = document.getElementById("frequency");
 	frequency.addEventListener("change", update_frequency);
+	
 	let rad = document.getElementsByName('data_source');
 	for(let i = 0; i < rad.length; i++) {
 		rad[i].addEventListener('change', function(e){
@@ -119,23 +121,34 @@ document.addEventListener('DOMContentLoaded', function () {
 			background.localStorage['db_source'] = val;
 		});
 	}
+	
 	let show_updating = document.getElementsByName('show_updating')[0];
 	show_updating.addEventListener('change', function(e) {
 		background.localStorage.show_updating = e.target.checked?1:0;
 		//background.updateIcon(); //jj: may be recursive??
 	});
+	
 	let use_httpdns = document.getElementsByName('use_httpdns')[0];
 	use_httpdns.addEventListener('change', function(e) {
 		background.localStorage.use_httpdns = e.target.checked?1:0;
 	});
+	
 	let check_site_is_online = document.getElementsByName('check_site_is_online')[0];
 	check_site_is_online.addEventListener('change', function(e) {
 		background.localStorage.check_site_is_online = e.target.checked?1:0;
 	});
+	
 	custom_provider_stub = document.getElementsByName('custom_provider_stub')[0];
 	custom_provider_stub.value = background.localStorage.custom_provider_stub;
 	save_custom_provider_stub = custom_provider_stub.value;
 	setInterval(lookup_provider_stub_input, 500);
+	
+	let httpdns = document.getElementById("httpdns");
+	httpdns.value = background.localStorage.httpdns;
+	httpdns.addEventListener("change", (e) => {
+		background.localStorage.httpdns = e.target.value;
+	});
+	
 	background.options_update_unsafe = options_update; //will recieve updated data
 	options_update(); //update now (initialize)
 	//modification for firefox

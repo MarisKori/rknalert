@@ -42,29 +42,39 @@ body{font-family:Arial}
 	<div class="tab whiteborder">Легенда</div>
 	<div class="tab">Информация о домене</div>
 	<div class="tab">Настройки</div>
-	<!--div class="tab">Помощь</div-->
 	<div class="tab">Changelog</div>
+	
 	<div class="tabContent">
-	<p>Цвет центра иконки символизирует сам сайт, а окружность - конкретный URL.
-<p><img src="/images/circ_pink_red_16.png"> домен находится в реестре РКН (заблокирован).
-<p><img src="/images/circ_green_green_16.png"> сайт чист.
-<p><img src="/images/circ_red_red_16.png"> ссылка заблокирована.
-<p><img src="/images/circ_red_white_16.png"> ссылка заблокирована, но домен чист.
-<p><img src="/images/circ_orange_green_16.png"> ссылка и домен чисты, но на домене есть заблокированные ссылки.
-<p><img src="/images/circ_yellow_red_16.png"> сайт заблокирован по ip.
-<p><img src="/images/circ_green_yellow_16.png"> сайт заблокирован у некоторых провайдеров, блокирующих исключительно по ip, и будет доступен у остальных провайдеров.
-<p><img src="/images/circ_whitelist_16.png"> сайт находится в белом списке РКН, и провайдеры не имеют право его блокировать.
-<p><b><u>Цвет ip:</u></b> <font color="#ff0000"><b>красный</b></font> - заблокирован, <font color="#ff8e00"><b>жёлтый</b></font> - в списке РКН, но блокировка по домену, <font color="#00bb00"><b>зелёный</b></font> - получен по http-dns и не заблокирован, <b>чёрный</b> - незаблокированный ip, <font color="#0000ff"><b>(синий)</b></font> - прокси.
-<p><img src="/images/ok.png" alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен."> Сайт доступен из США.<br>
-<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит."> Сайт не доступен из США (скорее всего, лежит).<br>
-<img src="/images/unknown_16.png" alt="Невозможно проверить доступность сайта." title="Невозможно проверить доступность сайта."> Невозможно проверить доступность сайта.<br>
-
-</div>
+		<p>Цвет центра иконки символизирует сам сайт, а окружность - конкретный URL.
+		<p><img src="/images/circ_pink_red_16.png"> домен находится в реестре РКН (заблокирован).
+		<p><img src="/images/circ_green_green_16.png"> сайт чист.
+		<p><img src="/images/circ_red_red_16.png"> ссылка заблокирована.
+		<p><img src="/images/circ_red_white_16.png"> ссылка заблокирована, но домен чист.
+		<p><img src="/images/circ_orange_green_16.png"> ссылка и домен чисты, но на домене есть заблокированные ссылки.
+		<p><img src="/images/circ_yellow_red_16.png"> сайт заблокирован по ip.
+		<p><img src="/images/circ_green_yellow_16.png"> сайт заблокирован у некоторых провайдеров,
+			блокирующих исключительно по ip, и будет доступен у остальных провайдеров.
+		<p><img src="/images/circ_whitelist_16.png"> сайт находится в белом списке РКН, и провайдеры не имеют право его блокировать.
+		<p><b><u>Цвет ip:</u></b>
+			<font color="#ff0000"><b>красный</b></font> - заблокирован,
+			<font color="#ff8e00"><b>жёлтый</b></font> - в списке РКН, но блокировка по домену,
+			<font color="#00bb00"><b>зелёный</b></font> - получен по http-dns и не заблокирован,
+			<b>чёрный</b> - незаблокированный ip,
+			<font color="#0000ff"><b>(синий)</b></font> - прокси.
+		<p>
+			<img src="/images/ok.png" alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
+				Сайт доступен из США.<br>
+			<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит.">
+				Сайт не доступен из США (скорее всего, лежит).<br>
+			<img src="/images/unknown_16.png" alt="Невозможно проверить доступность сайта." title="Невозможно проверить доступность сайта.">
+				Невозможно проверить доступность сайта.<br>
+	</div>
 	<div class="tabContent"><div id="blocked_domain"></div></div>
 	<div class="tabContent">
 		<span id="update_date"></span><br>
 		<button id="upd_button">Обновить</button><br>
 		<span id="update_error"></span><br>
+		
 		<p>Периодичность обновлений <select id="frequency">
 			<option value="1">1 час</option>
 			<option value="2">2 часа</option>
@@ -76,40 +86,34 @@ body{font-family:Arial}
 			<option value="10">10 часов</option>
 			<option value="12">12 часов</option>
 		</select>
+		
 		<p><b>Источник:</b><br>
 		<input type="radio" name="data_source" value="-1"> Не обновлять базу<br>
 		<input type="radio" name="data_source" value="0"> antizapret.info (csv) <span class=comment>(краткая информация)</span><br>
 		<input type="radio" name="data_source" value="1"> antizapret.info <span class=comment>(медленная загрузка)</span><br>
 		<input type="radio" name="data_source" value="2"> rublacklist.net <span class=comment>(недоступно через tor)</span><br>
 		<input type="radio" name="data_source" value="3"> github.com <span class=comment>(часто свежие данные, рекомендуется)</span><br>
+		
 		<p><input type="checkbox" name="show_updating"> Мигать иконкой при загрузке базы данных.<br>
-		<input type="checkbox" name="use_httpdns"> Использовать HTTP-DNS, если сайт недоступен. ip будет <b><font color="#00bb00">зелёным</font></b>.<br>
-		<input type="checkbox" name="check_site_is_online"> Проверять доступность сайта из других мест.
+		<input type="checkbox" name="use_httpdns"> Использовать HTTP-DNS.
+		<select id="httpdns">
+			<option value="0">dns.google.com</option>
+			<option value="1">dns.bermap.ru от @brzsmg</option>
+			<option value="2">dns-api.org (есть лимиты)</option>
+		</select>
+		<br>
+		<input type="checkbox" name="check_site_is_online"> Проверять доступность сайта из других мест (США).
 			<img src="/images/ok.png" alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
 			<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит."><br>
 		<p>Укажите заглушку своего провайдера (не обязательно):<br>
 		<input name="custom_provider_stub" size=70><br>
 	</div>
-	<!--div class="tabContent">
-		<p>Вы можете помочь проекту, прислав URL заглушки на заблокированный сайт мне на почту maris.kori@gmail.com
-		<p>Для этого нужно перейти по ссылке<br>
-		<a href="http://nnm-club.me">nnm-club.me</a><br>
-		или
-		<a href="http://fast-torrents.ru/1726-pchelka-mayya-i-kubok-meda-2018.html">fast-torrents.ru</a><br>
-		без обхода блокировок, и скопировать из адресной строки получившийся URL, и прислать.
-		<p>На данный момент уже известны следующие провайдеры (их присылать не нужно):<br>
-<textarea cols=40 rows=8>
-blackhole.beeline.ru
-blocked.mts.ru
-warning.rt.ru
-</textarea><br>
-Также пишите замечания и предложения.<br>
-И конечно же <s>ставьте лайки</s>
-<a id="extension_link" href="https://chrome.google.com/webstore/detail/blocklistcheck/mdbffnnpjhnfmnenfkffjohdgjfeiodn">пишите отзывы</a>.<br>
-
-		
-	</div-->
 	<div class="tabContent">
+	<b>Version 0.17</b> (10.10.2018)
+	<ul>
+		<li>Использование <a href="https://developers.google.com/speed/public-dns/docs/dns-over-https">dns.google.com</a>
+		<li>Выбор сервиса http-dns.
+	</ul>
 	<b>Version 0.16</b> (10.10.2018)
 	<ul>
 		<li>Возможность указвать свою заглушку провайдера.
