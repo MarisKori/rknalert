@@ -86,7 +86,38 @@ function getDNS(domain,callback) {
 	let rec = dns_cache[domain];
 	let now = (new Date()).getTime();
 	let xhr = new XMLHttpRequest();
-	if (localStorage.httpdns == 2) { //dns-api.org
+	if (localStorage.httpdns == 3) { //https://developers.cloudflare.com/1.1.1.1/dns-over-https/request-structure/
+		xhr.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status != 200)
+				console.log("getDNS ERROR (cloudflare)",this.status,xhr.responseText);
+			if (this.readyState == 4 && this.status == 200) {
+				try {
+					const o = JSON.parse(xhr.responseText);
+					const arr = o.Answer;
+					if (o.Status != 0 || arr.length === undefined) return console.log('cloudflare dns error:',xhr.responseText);
+					if (!rec) {
+						rec={};
+						dns_cache[domain]=rec;
+					}
+					rec.ip = {};
+					rec.reason = {};
+					rec.time = now;
+					//if (!arr.length) return; //keep empty record in cache. Don't update it until timeout.
+					for(let i=0;i<arr.length;i++) {
+						let ip = arr[i].data;
+						if (arr[i].type == 1) {
+							rec.ip[ip] = check_ip(ip);
+							if (rec.ip[ip] == 2) rec.reason[ip] = blocked_ip_reason;
+						}
+					}
+					callback(rec);
+				} catch(e) {
+					//console.log(e,xhr.responseText);
+				}
+			}
+		};
+		xhr.open("GET", 'https://cloudflare-dns.com/dns-query?name='+domain+'&type=A&ct=application/dns-json', true);
+	} else if (localStorage.httpdns == 2) { //dns-api.org
 		xhr.onreadystatechange = function() {
 			if (this.readyState == 4) { //debug
 				if (this.status == 200) ;//console.log("getDNS",JSON_parse(xhr.responseText));
@@ -501,7 +532,7 @@ function updateIcon(url, tabId) {
 	let dns = getDnsCached(real_domain);
 	if (dns) {
 		for(let ip in dns.ip) {
-			if (icon_hint.ip_arr[ip] === undefined) {
+			if (!icon_hint.ip_arr[ip]) { //undefined || 0
 				icon_hint.ip_arr[ip] = dns.ip[ip] == 0 ? 5 : dns.ip[ip];
 				if (dns.ip[ip] > is_ip_blocked) is_ip_blocked = dns.ip[ip];
 			}
@@ -537,10 +568,11 @@ function updateIcon(url, tabId) {
 		}
 		let is_whitelist = icon_hint.is_whitelist_domain || icon_hint.is_whitelist_ip || icon_hint.is_whitelist_ip_local;
 		//Check blocked ip
-		if (ip && icon_hint.ip_arr[ip] > 0) {
+		if (ip && icon_hint.ip_arr[ip] > 0 && icon_hint.ip_arr[ip] != 5) {
 			let status = icon_hint.ip_arr[ip];
 			if (status == 2) {
-				icon_hint.text = "Сайт заблокирован по ip";
+				if (is_ip_blocked === 3) icon_hint.text = "Заблокирована целая подсеть.";
+				else icon_hint.text = "Сайт заблокирован по ip";
 				chrome.browserAction.setTitle({title:"ip " + ip,tabId:tabId});
 				chrome.browserAction.setIcon({path: "images/circ_yellow_red_16.png"});
 			}
@@ -768,6 +800,7 @@ function load_String_From_URL(url, callback_finished, callback_loading, on_succe
 	if (windows1251) {
 		xhttp.overrideMimeType('text/plain; charset=windows-1251');
 	}
+	//xhttp.setRequestHeader('Content-Type', 'application/dns-json');
 	xhttp.send();
 }
 
