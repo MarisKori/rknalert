@@ -219,11 +219,21 @@ var known_proxy_ip = {
 	//proxy.antizapret.prostovpn.org
 	"195.123.214.52":1, "195.123.214.53":1, "195.123.214.54":1, "54.37.137.152":1,
 	"54.37.137.153":1, "137.74.171.91":1, "163.172.173.40":1, "185.14.31.172":1,
+	//ccahiha.antizapret.prostovpn.org
+	"195.123.225.47":1, "195.123.217.178":1, "195.123.225.31":1,
 	//rutracker
 	'195.82.146.20':2,
 }
+//const known_proxy = {
+	//Browsec VPN
+	//'at1.lunrac.com':4, 'at2.lunrac.com':4, 
+//}
 function check_proxy_ip() {
 	getDNS('proxy.antizapret.prostovpn.org',function(rec){
+		//dont remove old ips
+		for(let ip in rec.ip) known_proxy_ip[ip] = 1;
+	})
+	getDNS('ccahiha.antizapret.prostovpn.org',function(rec){
 		//dont remove old ips
 		for(let ip in rec.ip) known_proxy_ip[ip] = 1;
 	})
@@ -571,6 +581,7 @@ function updateIcon(url, tabId) {
 		if (ip && icon_hint.ip_arr[ip] > 0 && icon_hint.ip_arr[ip] != 5) {
 			let status = icon_hint.ip_arr[ip];
 			if (status == 2) {
+				if (icon_hint.reason_ip) icon_hint.date = icon_hint.reason_ip.date;
 				if (is_ip_blocked === 3) icon_hint.text = "Заблокирована целая подсеть.";
 				else icon_hint.text = "Сайт заблокирован по ip";
 				chrome.browserAction.setTitle({title:"ip " + ip,tabId:tabId});
@@ -591,10 +602,12 @@ function updateIcon(url, tabId) {
 		//Check block of the site by ip
 		if (!ip && is_ip_blocked) {
 			if (is_ip_blocked === 3) {
+				if (icon_hint.reason_ip) icon_hint.date = icon_hint.reason_ip.date;
 				icon_hint.text = "Заблокирована целая подсеть.";
 				chrome.browserAction.setTitle({title:"Ковровая блокировка",tabId:tabId});
 				chrome.browserAction.setIcon({path: "images/circ_yellow_red_16.png"});
 			} else if (is_ip_blocked === 2) {
+				if (icon_hint.reason_ip) icon_hint.date = icon_hint.reason_ip.date;
 				icon_hint.text = "Блокировка по ip";
 				chrome.browserAction.setTitle({title:"Блокировка по ip",tabId:tabId});
 				chrome.browserAction.setIcon({path: "images/circ_yellow_red_16.png"});
@@ -1038,6 +1051,7 @@ function update_Database(csv, no_save) {
 					database.blocked_ip_reason[ip] = {
 						postanovlenie: o.postanovlenie,
 						gos_organ: o.gos_organ,
+						date: blocked_date,
 					};
 					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.warn('Bad ip:',ip);
 				}
@@ -1215,6 +1229,7 @@ function update_Database(csv, no_save) {
 					database.blocked_ip_reason[ip] = {
 						postanovlenie: postanovlenie,
 						gos_organ: gos_organ,
+						date: blocked_date,
 					}
 					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.warn('Bad ip:',ip);
 				}
