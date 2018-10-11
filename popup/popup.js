@@ -5,17 +5,17 @@ function add(info) {
 	html += info + "<br>\n";
 }
 
-
+let is_show_blockip_notice;
 function get_ip_list() {
 	//background.console.log('show_ip_list');
 	let hint = background.icon_hint;
 	let html = '';
 	let proxy_index;
 	for(let ip in hint.ip_arr) {
-		if (ip == hint.hostname) continue;
-		if (hint.reason_ip && ip == hint.reason_ip.mask) continue;
-		let line = ip;
 		let status = hint.ip_arr[ip];
+		if (ip == hint.hostname && (status == 0 || status == 5)) continue;
+		if (is_show_blockip_notice && ip == hint.reason_ip.mask) continue;
+		let line = ip;
 		if (status == 1) line = '<font color="#ff8e00">'+line+'</font>';
 		else if (status == 2) line = '<font color="#ff0000">'+line+'</font>';
 		else if (status == 5) line = '<font color="#00bb00">'+line+'</font>';
@@ -81,22 +81,21 @@ function popup_update() {
 	else add('Это вообще не сайт.');
 	if (hint.text) add(hint.text);
 	//info about ip
+	is_show_blockip_notice = hint.reason_ip && (!hint.reason || hint.reason.postanovlenie != hint.reason_ip.postanovlenie );
 	html+=get_ip_list();
 	if (hint.reason) {
 		add('<b>Причина:</b>');
 		add("Гос. орган: <b>"+hint.reason.gos_organ+"</b>");
 		add("Постановление: <b>"+hint.reason.postanovlenie+"</b>");
 	}
-	if (hint.reason_ip) {
+	if (is_show_blockip_notice) {
 		let reason = hint.reason_ip;
-		if (!hint.reason || hint.reason.postanovlenie != reason.postanovlenie ) {
-			add('<b>Блокировка по ip:</b>');
-			if (reason.mask) {
-				add("Подсеть: <font color=red>"+reason.mask+"</font>");
-			}
-			add("Гос. орган: <b>"+reason.gos_organ+"</b>");
-			add("Постановление: <b>"+reason.postanovlenie+"</b>");
+		add('<b>Блокировка по ip:</b>');
+		if (reason.mask) {
+			add("Подсеть: <font color=red>"+reason.mask+"</font>");
 		}
+		add("Гос. орган: <b>"+reason.gos_organ+"</b>");
+		add("Постановление: <b>"+reason.postanovlenie+"</b>");
 	}
 	if (hint.is_whitelist_domain) add('<span class=whitelist>Домен в белом списке РКН</span>');
 	else if (hint.is_whitelist_ip) add('<span class=whitelist>ip-адрес в белом списке РКН</span>');
