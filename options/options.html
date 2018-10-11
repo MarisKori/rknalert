@@ -59,12 +59,12 @@ body{font-family:Arial}
 			<font color="#ff0000"><b>красный</b></font> - заблокирован,
 			<font color="#ff8e00"><b>жёлтый</b></font> - в списке РКН, но блокировка по домену,
 			<font color="#00bb00"><b>зелёный</b></font> - получен по http-dns и не заблокирован,
-			<b>чёрный</b> - незаблокированный ip,
+			<b>чёрный</b> - незаблокированный ip или прокси,
 			<font color="#0000ff"><b>(синий)</b></font> - прокси.
 		<p>
 			<img src="/images/ok.png" alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
 				Сайт доступен из США.<br>
-			<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит.">
+			<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит, но не факт.">
 				Сайт не доступен из США (скорее всего, лежит).<br>
 			<img src="/images/unknown_16.png" alt="Невозможно проверить доступность сайта." title="Невозможно проверить доступность сайта.">
 				Невозможно проверить доступность сайта.<br>
@@ -98,6 +98,7 @@ body{font-family:Arial}
 		<input type="checkbox" name="use_httpdns"> Использовать HTTP-DNS.
 		<select id="httpdns">
 			<option value="0">dns.google.com</option>
+			<option value="3">cloudflare-dns.com</option>
 			<option value="1">dns.bermap.ru от @brzsmg</option>
 			<option value="2">dns-api.org (есть лимиты)</option>
 		</select>
@@ -109,6 +110,11 @@ body{font-family:Arial}
 		<input name="custom_provider_stub" size=70><br>
 	</div>
 	<div class="tabContent">
+	<b>Version 0.18.2</b> (12.10.2018)
+	<ul>
+		<li>Добавлен cloudflare в опции http-dns.
+		<li>Исправление багов.
+	</ul>
 	<b>Version 0.18</b> (11.10.2018)
 	<ul>
 		<li>Показ подсетей, послуживших причиной блокировки (например reactos.org ).
