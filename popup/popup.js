@@ -61,7 +61,7 @@ function popup_update() {
 	//domain
 	if (hint.hostname) { // && !(hint.ip && /^\d+\.\d+\.\d+\.\d+$/.test(hint.hostname))) {
 		let is_up_status = '';
-		if (background.localStorage.check_site_is_online==1) {
+		if (hint.check_is_online) {
 			is_up_status = ' <img src="/images/loading_16.gif">';
 		}
 		let style = '';
