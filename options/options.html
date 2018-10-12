@@ -42,7 +42,7 @@ body{font-family:Arial}
 	<div class="tab whiteborder">Легенда</div>
 	<div class="tab">Информация о домене</div>
 	<div class="tab">Настройки</div>
-	<div class="tab">Changelog</div>
+	<div class="tab">О расширении</div>
 	
 	<div class="tabContent">
 		<p>Цвет центра иконки символизирует сам сайт, а окружность - конкретный URL.
@@ -106,57 +106,16 @@ body{font-family:Arial}
 		<input type="checkbox" name="check_site_is_online"> Проверять доступность сайта из других мест (США).
 			<img src="/images/ok.png" alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
 			<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит."><br>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="check_site_only_if_error"> Проверть доступность только если сайт не грузится.
 		<p>Укажите заглушку своего провайдера (не обязательно):<br>
 		<input name="custom_provider_stub" size=70><br>
 	</div>
 	<div class="tabContent">
-	<b>Version 0.18.2</b> (12.10.2018)
-	<ul>
-		<li>Добавлен cloudflare в опции http-dns.
-		<li>Исправление багов.
-	</ul>
-	<b>Version 0.18</b> (11.10.2018)
-	<ul>
-		<li>Показ подсетей, послуживших причиной блокировки (например reactos.org ).
-		<li>Правильный значок при ковровой блокировке.
-	</ul>
-	<b>Version 0.17</b> (10.10.2018)
-	<ul>
-		<li>Использование <a href="https://developers.google.com/speed/public-dns/docs/dns-over-https">dns.google.com</a>
-		<li>Выбор сервиса http-dns.
-	</ul>
-	<b>Version 0.16</b> (10.10.2018)
-	<ul>
-		<li>Возможность указвать свою заглушку провайдера.
-		<li>Больше опций.
-		<li>Проверка доступности сайта из США.
-	</ul>
-	<b>Version 0.15</b> (08.10.2018)
-	<ul>
-		<li>Распознавание проксей от ValdikSS.
-		<li>Определение ip через http-dns.
-		<li>Больше источников (рекомендуется github.com).
-		<li>Выбор частоты обновления.
-	</ul>
-	<b>Version 0.14</b> (05.10.2018)
-	<ul>
-		<li>Определение ip сайта и его статус в реестре (пока без ipv6).
-		<li>Изменено название расширения.
-		<li>Перед загрузкой базы проверяется её актуальность.
-		<li>Добавлен ещё один источник для получения базы реестра, теперь их два.
-		<li>Добавлен белый список РКН.
-		<li>Доработан вывод списка заблокированных ссылок.
-	</ul>
-	<b>Version 0.13</b> (26.09.2018)
-	<ul>
-		<li>Добавлены вкладки в опциях
-		<li>Реализована бесперебойная работа даже в случае недоступности хранилища
-		<li>Улучшено скачивание базы РКН на медленных соединениях
-		<li>Анимированная иконка при обновлении базы РКН.
-		<li>Меньше тупит при первой установке.
-		<li>Адекватное поведение на заглушках провайдеров.
-		<li>Причёсан код (но не идеально).
-	</ul>
+		<span id="current_version"></span><br>
+		<a href="https://chrome.google.com/webstore/detail/rkn-alert/mdbffnnpjhnfmnenfkffjohdgjfeiodn" id="extension_link">Страница в магазине</a><br>
+		<a href="https://habr.com/post/425831/">Статья на Хабре</a><br>
+		<a href="https://github.com/MarisKori/rknalert">Исходники на github.com</a><br>
+		<a href="https://github.com/MarisKori/rknalert/wiki/Changelog">Changelog</a><br>
 	</div>
 </div>
 

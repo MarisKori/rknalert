@@ -65,12 +65,6 @@ function options_update() {
 		}
 	}
 	//checkbox
-	let show_updating = document.getElementsByName('show_updating')[0];
-	show_updating.checked = background.localStorage.show_updating==1;
-	let use_httpdns = document.getElementsByName('use_httpdns')[0];
-	use_httpdns.checked = background.localStorage.use_httpdns==1;
-	let check_site_is_online = document.getElementsByName('check_site_is_online')[0];
-	check_site_is_online.checked = background.localStorage.check_site_is_online==1;
 	//custom_provider_stub
 	//let custom_provider_stub = document.getElementsByName('custom_provider_stub')[0];
 	//custom_provider_stub.value = background.localStorage.custom_provider_stub;
@@ -124,19 +118,28 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 	
 	let show_updating = document.getElementsByName('show_updating')[0];
+	show_updating.checked = background.localStorage.show_updating==1;
 	show_updating.addEventListener('change', function(e) {
 		background.localStorage.show_updating = e.target.checked?1:0;
 		//background.updateIcon(); //jj: may be recursive??
 	});
 	
 	let use_httpdns = document.getElementsByName('use_httpdns')[0];
+	use_httpdns.checked = background.localStorage.use_httpdns==1;
 	use_httpdns.addEventListener('change', function(e) {
 		background.localStorage.use_httpdns = e.target.checked?1:0;
 	});
 	
 	let check_site_is_online = document.getElementsByName('check_site_is_online')[0];
+	check_site_is_online.checked = background.localStorage.check_site_is_online==1;
 	check_site_is_online.addEventListener('change', function(e) {
 		background.localStorage.check_site_is_online = e.target.checked?1:0;
+	});
+	
+	let check_site_only_if_error = document.getElementsByName('check_site_only_if_error')[0];
+	check_site_only_if_error.checked = background.localStorage.check_site_only_if_error==1;
+	check_site_only_if_error.addEventListener('change', function(e) {
+		background.localStorage.check_site_only_if_error = e.target.checked?1:0;
 	});
 	
 	custom_provider_stub = document.getElementsByName('custom_provider_stub')[0];
@@ -153,10 +156,10 @@ document.addEventListener('DOMContentLoaded', function () {
 	background.options_update_unsafe = options_update; //will recieve updated data
 	options_update(); //update now (initialize)
 	//modification for firefox
-	/*
 	if (location.href.split('://')[0] == 'moz-extension') { //FireFox
 		document.getElementById("extension_link").href='https://addons.mozilla.org/en-US/firefox/addon/blocklistcheck/';
 	}
-	*/
+	const manifest = chrome.runtime.getManifest();
+	document.getElementById('current_version').innerHTML = '<b>Версия: v'+manifest.version+'</b>';
 })
 
