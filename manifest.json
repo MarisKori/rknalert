@@ -4,7 +4,7 @@
 	"name": "RKN Alert",
 	"short_name": "RKN Alert",
 	"description": "Показывает цветом иконки, внесён ли сайт в реестр Роскомнадзора.",
-	"version": "0.18.3",
+	"version": "0.18.4",
 	"icons": {
 			"16": "images/logo_16.png",
 			"32": "images/logo_32.png",
