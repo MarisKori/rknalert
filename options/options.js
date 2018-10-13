@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	options_update(); //update now (initialize)
 	//modification for firefox
 	if (location.href.split('://')[0] == 'moz-extension') { //FireFox
-		document.getElementById("extension_link").href='https://addons.mozilla.org/en-US/firefox/addon/blocklistcheck/';
+		document.getElementById("extension_link").href='https://addons.mozilla.org/ru/firefox/addon/blocklistcheck/';
 	}
 	const manifest = chrome.runtime.getManifest();
 	document.getElementById('current_version').innerHTML = '<b>Версия: v'+manifest.version+'</b>';
