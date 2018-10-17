@@ -36,18 +36,28 @@ function get_ip_list() {
 	return html;
 }
 
+function get_is_online_str (num) {
+	if (num == 1) return ' <img src="/images/ok.png" alt="Сайт доступен." title="Сайт доступен.">';
+	if (num == 2) return ' <img src="/images/down.png" alt="Сайт лежит." title="Сайт лежит.">';
+	if (num == 3) return ' <img src="/images/unknown_16.png" alt="Невозможно проверить доступность сайта." title="Невозможно проверить доступность сайта.">';
+	if (num == 4) return ' <img src="/images/loading_16.gif">';
+	return '';
+}
 
 function update_site_status(is_up_rec) {
 	let hint = background.icon_hint;
 	if (hint.real_domain != is_up_rec.hostname) return;
 	let check_site_result = document.getElementById('check_site_result');
 	if (!check_site_result) return background.console.warn('No check_site_result!'); //jj
-	const is_up = is_up_rec.result;
-	if (is_up === "?")
-		check_site_result.innerHTML = ' <img src="/images/unknown_16.png" alt="Невозможно проверить доступность сайта." title="Невозможно проверить доступность сайта.">';
-	else if (is_up===true) check_site_result.innerHTML = ' <img src="/images/ok.png" alt="Сайт доступен." title="Сайт доступен.">';
-	else if(is_up===false) check_site_result.innerHTML = ' <img src="/images/down.png" alt="Сайт лежит." title="Сайт лежит.">';
-	else check_site_result.innerHTML = ' [error]';
+	check_site_result.innerHTML = get_is_online_str(is_up_rec.result);
+}
+
+function update_whois(whois) {
+	let hint = background.icon_hint;
+	if (hint.real_domain != whois.domain) return;
+	let whois_element = document.getElementById('whois_element');
+	if (!whois_element) return background.console.warn('No whois_element!');
+	whois_element.innerHTML = 'Возраст: ' + whois.result + '<br>';
 }
 
 function popup_update() {
@@ -60,16 +70,18 @@ function popup_update() {
 	html = '';
 	//domain
 	if (hint.hostname) { // && !(hint.ip && /^\d+\.\d+\.\d+\.\d+$/.test(hint.hostname))) {
-		let is_up_status = '';
-		if (hint.check_is_online) {
-			is_up_status = ' <img src="/images/loading_16.gif">';
-		}
+		let is_up_status = get_is_online_str(hint.check_is_online); //1 - online, 2-offline, 3-unknown, 4-loading
 		let style = '';
 		if (hint.domain_blocked) style=' class=red';
 		else if (hint.is_ip_blocked > 1) style = ' class=green';
 		add("<b><span"+style+">"
 			+ hint.hostname + '</span><span id="check_site_result">'+is_up_status+'</span></b>');
 	}
+	//fishing
+	if (hint.is_fishing) add('<font color=red>Фишинговый сайт!</font>');
+	//whois
+	let whois_str = hint.whois && ('Возраст: ' + hint.whois.result + '<br>') || '';
+	html+='<span id="whois_element">' + whois_str + '</span>';
 	//date when was blocked by RKN
 	if (hint.date) add("Дата блокировки: " + hint.date);
 	//comment
