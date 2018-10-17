@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	use_httpdns.checked = background.localStorage.use_httpdns==1;
 	use_httpdns.addEventListener('change', function(e) {
 		background.localStorage.use_httpdns = e.target.checked?1:0;
+		background.clearDNSCache();
 	});
 	
 	let check_site_is_online = document.getElementsByName('check_site_is_online')[0];
@@ -151,6 +152,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	httpdns.value = background.localStorage.httpdns;
 	httpdns.addEventListener("change", (e) => {
 		background.localStorage.httpdns = e.target.value;
+		background.clearDNSCache();
+	});
+
+	let show_age = document.getElementById("show_age");
+	show_age.checked = background.localStorage.show_age==1;
+	show_age.addEventListener("change", (e) => {
+		background.localStorage.show_age = e.target.checked?1:0;
 	});
 	
 	background.options_update_unsafe = options_update; //will recieve updated data

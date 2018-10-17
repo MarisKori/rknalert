@@ -61,6 +61,7 @@ body{font-family:Arial}
 		<p><img src="/images/circ_green_yellow_16.png"> сайт заблокирован у некоторых провайдеров,
 			блокирующих исключительно по ip, и будет доступен у остальных провайдеров.
 		<p><img src="/images/circ_whitelist_16.png"> сайт находится в белом списке РКН, и провайдеры не имеют право его блокировать.
+		<p><img src="/images/circ_fishing_16.png"> фишинговый сайт - лучше не вводить там свои пароли.
 		<p><b><u>Цвет ip:</u></b>
 			<font color="#ff0000"><b>красный</b></font> - заблокирован,
 			<font color="#ff8e00"><b>жёлтый</b></font> - в списке РКН, но блокировка по домену,
@@ -100,7 +101,9 @@ body{font-family:Arial}
 		<input type="radio" name="data_source" value="2"> rublacklist.net <span class=comment>(недоступно через tor)</span><br>
 		<input type="radio" name="data_source" value="3"> github.com <span class=comment>(часто свежие данные, рекомендуется)</span><br>
 		
-		<p><input type="checkbox" name="show_updating"> Мигать иконкой при загрузке базы данных.<br>
+		<p><input type="checkbox" name="show_updating"> Мигать иконкой при загрузке базы данных.
+		<img src="/images/info_17.png" align=absmiddle alt="При этом информация о сайте на иконке будет недоступна." title="При этом информация о сайте на иконке будет недоступна.">
+		<br>
 		<input type="checkbox" name="use_httpdns"> Использовать HTTP-DNS.
 		<select id="httpdns">
 			<option value="0">dns.google.com</option>
@@ -108,11 +111,15 @@ body{font-family:Arial}
 			<option value="1">dns.bermap.ru от @brzsmg</option>
 			<option value="2">dns-api.org (есть лимиты)</option>
 		</select>
+		<img src="/images/info_17.png" align=absmiddle alt="Выберите тот DNS, которым пользуется браузер." title="Выберите тот DNS, которым пользуется браузер.">
 		<br>
 		<input type="checkbox" name="check_site_is_online"> Проверять доступность сайта из других мест (США).
-			<img src="/images/ok.png" alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
-			<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит."><br>
+			<img src="/images/ok.png" align=absmiddle alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
+			<img src="/images/down.png" align=absmiddle alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит."><br>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="check_site_only_if_error"> Проверть доступность только если сайт не грузится.
+		<br>
+		<input type="checkbox" id="show_age"> Показывать возраст сайта (домена).<br>
+
 		<p>Укажите заглушку своего провайдера (не обязательно):<br>
 		<input name="custom_provider_stub" size=70><br>
 	</div>
