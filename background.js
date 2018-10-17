@@ -36,7 +36,7 @@ var known_proxy_ip = {
 	//ccahiha.antizapret.prostovpn.org
 	"195.123.225.47":1, "195.123.217.178":1, "195.123.225.31":1,
 	//rutracker
-	'195.82.146.20':2,
+	'195.82.146.20':2, '163.172.167.207':2, '195.82.146.100':2,
 }
 //const known_proxy = {
 	//Browsec VPN
@@ -928,6 +928,51 @@ function delete_db() {
 function delete_db_full() {
 	return db.deleteObjectStore("csv");
 }
+
+//------------------------ CHECK WHOIS ---------------------------
+
+if (localStorage.show_age === undefined) localStorage.show_age = 1;
+
+const whois_cache = {}
+
+function getWhoisCached(domain) {
+	//console.log('whois cache',domain);
+	const root = extractRootDomain(domain);
+	if (whois_cache[root]) return {domain:domain, result:whois_cache[root].result};
+}
+
+function getWhois(domain, callback) {
+	//console.log('whois',domain);
+	const root = extractRootDomain(domain);
+	let xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4) {
+			//console.log('success');
+			if (this.status != 200) return console.log('error',this.status);
+			let start = xhr.responseText.indexOf('<p><b>Возраст домена:');
+			if (start == -1) return //console.log('error1');
+			let end = xhr.responseText.indexOf('</b></p>', start);
+			if (end == -1) return //console.log('error2');
+			let result = xhr.responseText.substr(start + 22, end - start - 22);
+			if (!/>\d+ .*<\/span/.test(result)) return //console.log('error3',result);
+			whois_cache[root] = {
+				time: 0, //(new Date()).getTime(),
+				result: result,
+			}
+			try {
+				callback({domain:domain, result:result});
+			} catch(e) {
+				//window dead (firefox)
+			}
+		}
+	};
+	xhr.open("GET", 'https://xn--b1aaefabsd1cwaon.xn--p1ai/site/'+root, true); // довериевсети.рф
+	xhr.send();
+}
+
+
+
+
 
 
 
