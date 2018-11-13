@@ -10,7 +10,7 @@ This project is licensed under the terms of the MIT license.
 
 Chrome - https://chrome.google.com/webstore/detail/rkn-alert/mdbffnnpjhnfmnenfkffjohdgjfeiodn
 
-FireFix - https://addons.mozilla.org/en-US/firefox/addon/blocklistcheck/
+FireFox - https://addons.mozilla.org/en-US/firefox/addon/blocklistcheck/
 
 
 
