@@ -7,7 +7,9 @@ This project is licensed under the terms of the MIT license.
 Если сайт в чёрном списке, то по закону провайдер обязан блокировать его. На деле ситуация интереснее. Иногда сайты не блокируются. Иногда сайты блокируются неправомерно, "на всякий случай".
 
 Подписаться на расширение можно по ссылкам:
+
 Chrome - https://chrome.google.com/webstore/detail/rkn-alert/mdbffnnpjhnfmnenfkffjohdgjfeiodn
+
 FireFix - https://addons.mozilla.org/en-US/firefox/addon/blocklistcheck/
 
 
