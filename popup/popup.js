@@ -78,7 +78,9 @@ function popup_update() {
 			+ hint.hostname + '</span><span id="check_site_result">'+is_up_status+'</span></b>');
 	}
 	//fishing
-	if (hint.is_fishing) add('<font color=red>Фишинговый сайт!</font>');
+	if (hint.is_fishing) add('<font color=red><b>Фишинговый сайт!</b></font>');
+	else if (hint.is_personal_mirror) add('<font color=#77f><b>Персональное зеркало</b></font>');
+	else if (hint.not_fishing) add('<font color=#77f><b>Официальное зеркало</b></font>');
 	//whois
 	let whois_str = hint.whois && ('Возраст: ' + hint.whois.result + '<br>') || '';
 	html+='<span id="whois_element">' + whois_str + '</span>';
