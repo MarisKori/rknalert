@@ -62,19 +62,21 @@ check_proxy_ip();
 // --------------------------- DOWNLOADING DATABASE ------------------------
 
 //let start = ((new Date()).getTime() / 1000);
-let xhttp;
+let xhttp_outer;
 function load_String_From_URL(url, callback_finished, callback_loading, on_success, on_fail, windows1251) {
-	xhttp = new XMLHttpRequest();
+	let xhttp = new XMLHttpRequest();
+	xhttp_outer = xhttp;
 	xhttp.onreadystatechange = function() {
 		//let now = ((new Date()).getTime() / 1000);
 		//console.log((now-start).toFixed(2),"Stage:", this.readyState, this.status);
 		if (this.readyState == 4 && this.status == 200) {
 			console.log("Loaded:", url);
+			xhttp_outer = undefined;
 			if (callback_finished) {
 				if ("string" == typeof callback_finished) {
-					window[callback_finished] = xhttp.responseText; //debug in console
+					//window[callback_finished] = this.responseText; //debug in console
 				} else {
-					let result = callback_finished(xhttp.responseText);
+					let result = callback_finished(this.responseText);
 					if (result !== true) {
 						if (on_fail) on_fail(result);
 					}
@@ -83,10 +85,11 @@ function load_String_From_URL(url, callback_finished, callback_loading, on_succe
 			}
 			//jj: what if no callback...
 		}
-		else if (callback_loading !== undefined) callback_loading(xhttp, this.readyState, this.status);
+		else if (callback_loading !== undefined) callback_loading(this, this.readyState, this.status);
 		if (this.readyState == 4 && this.status != 200) {
+			xhttp_outer = undefined;
 			console.log('xhr error:',this.status);
-			if (on_fail) on_fail(xhttp.responseText)
+			if (on_fail) on_fail(this.responseText);
 		}
 	};
 	xhttp.open("GET", url, true);
@@ -95,6 +98,10 @@ function load_String_From_URL(url, callback_finished, callback_loading, on_succe
 	}
 	//xhttp.setRequestHeader('Content-Type', 'application/dns-json');
 	xhttp.send();
+}
+
+function clearString(str) {
+	return str.length < 13 ? str : str.split('').join(''); //(' ' + str).slice(1);
 }
 
 let database;
@@ -117,9 +124,7 @@ reset_Database();
 let db_updated_date = 0; //session update timestamp
 if (localStorage['db_updated_date']) db_updated_date = localStorage['db_updated_date'];
 //Parse csv file and update database of blocked sites.
-let test_csv;
 function update_Database(csv, no_save) {
-	test_csv = csv;
 	//return "Skip";
 	let start_updating_tm = (new Date()).getTime();
 	if (csv.length < 10) return "No result"; //no result
@@ -165,7 +170,7 @@ function update_Database(csv, no_save) {
 			if (check_row(row[i])) cnt_good++;
 		}
 		if (cnt_good < 950) {
-			console.warn('Error in json row structure of database!');
+			console.log('Error in json row structure of database!');
 			return 'Error in json row structure of database!';
 		}
 		reset_Database();
@@ -202,7 +207,7 @@ function update_Database(csv, no_save) {
 				let arr_ip = o.ip;
 				let cnt_ip = arr_ip.length;
 				for (let i=0; i<cnt_ip; i++) {
-					if (arr_ip[i].indexOf('/') > -1) console.warn("Error in minor ip, it should not be range:",arr_ip[i]);
+					if (arr_ip[i].indexOf('/') > -1) console.log("Error in minor ip, it should not be range:",arr_ip[i]);
 					else database.blocked_site_ip[arr_ip[i]] = true;
 				}
 			}
@@ -210,7 +215,7 @@ function update_Database(csv, no_save) {
 				let arr_url = urls.split(",http"); //and https
 				if (arr_url.length > 1) for(let j=1; j<arr_url.length; j++) {
 					arr_url[j] = "http" + arr_url[j];
-					//if (arr_url[j].indexOf(',') > -1) console.warn("Error ',' in URL:",arr_url[j]);
+					//if (arr_url[j].indexOf(',') > -1) console.log("Error ',' in URL:",arr_url[j]);
 				}
 				cnt_records += arr_url.length;
 				//if (urls.indexOf(",")>-1) console.log(urls);
@@ -218,12 +223,12 @@ function update_Database(csv, no_save) {
 					let url = arr_url[i];
 					if (!domain) { //cover possible csv error
 						domain = extractHostname(url).toLowerCase(); 
-						console.warn('Error no domain:',o);
+						console.log('Error no domain:',o);
 					}
 					
 					if (domain != extractHostname(url).toLowerCase()) { //cover known csv bug
 						let url_domain = extractHostname(url).toLowerCase();
-						//console.warn('Error in domain:', domain, url_domain);
+						//console.log('Error in domain:', domain, url_domain);
 						if (!database.blocked_domain[domain]) { //Add a record for this domain. It's possibly blocked.
 							database.blocked_domain[domain] = {
 								blocked: false,
@@ -253,7 +258,7 @@ function update_Database(csv, no_save) {
 					if (url.substr(0,7) == 'http://') url = url.substr(7, url.length-7);
 					else if (url.substr(0,8) == 'https://') url = url.substr(8, url.length-8);
 					else {
-						//console.warn('Bad url:',url);
+						//console.log('Bad url:',url);
 						continue;
 					}
 					
@@ -261,7 +266,7 @@ function update_Database(csv, no_save) {
 						rec.blocked = true;
 						rec.postanovlenie = o.postanovlenie || o.org_act;
 						rec.gos_organ = o.gos_organ || o.org;
-						//console.warn('RKN domain inaccuracy:',url);
+						//console.log('RKN domain inaccuracy:',url);
 						continue;
 					}
 
@@ -333,7 +338,7 @@ function update_Database(csv, no_save) {
 						gos_organ: o.gos_organ,
 						date: blocked_date,
 					};
-					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.warn('Bad ip:',ip);
+					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.log('Bad ip:',ip);
 				}
 			}
 		}
@@ -341,11 +346,9 @@ function update_Database(csv, no_save) {
 		//end of json parse
 	}
 	else if (csv.substr(0,8) == 'Updated:') { //csv format
+		console.log('CSV format');
 		//Fixing encoding...
 		//Content-Type: text/plain; charset=utf-8 - WRONG! Windows-1251? Really??
-		if (TextDecoder) {
-			
-		}
 		let row = csv.split("\n");
 		let cnt = row.length;
 		if (cnt < 1000) { //Error in database! 
@@ -360,9 +363,9 @@ function update_Database(csv, no_save) {
 			//Probably 404 or 500 or something like that.
 			return 'Error in database! Wrong format';
 		}
-		let base_date = row[0].substr(9,row[0].length-9);
+		let base_date = clearString(row[0].substr(9,row[0].length-9));
 		if (!/^\d{4}-\d{2}-\d{2}/.test(base_date)) {
-			return 'Error in database! Wrong date format: '+row[0];
+			return 'Error in database! Wrong date format: '+clearString(row[0]);
 		}
 		reset_Database();
 		for (let i=1; i<cnt; i++) {
@@ -371,50 +374,50 @@ function update_Database(csv, no_save) {
 				if (data.length > 6) { //fix a known bug in the csv file: symbols ";" in url.
 					let restore_url = data.splice(2, data.length - 5).join(';');
 					data.splice(2, 0, restore_url);
-					//console.warn("Complex data!",row[i]);
-					let check_quotes = /^\"(.*)\"$/.exec(data[2]);
+					//console.log("Complex data!",row[i]);
+					let check_quotes = data[2].match(/^\"(.*)\"$/);
 					if (check_quotes) data[2] = check_quotes[1];
 				}
 				else { //unknown bug
-					if (data[0]) console.warn('Error: ',row[i]);
+					if (data[0]) console.log('Error: ',clearString(row[i]));
 					continue;
 				}
 			}
 			//format: [0] - date; [1] - array of urls; [2] - domain; [3] - array of ip
-			let blocked_date = data[5];
+			let blocked_date = clearString(data[5]);
 			let urls = data[2];
-			let domain = extractHostname(data[1]);
-			let postanovlenie = data[4];
-			let gos_organ = data[3];
+			let domain = clearString(extractHostname(data[1]));
+			let postanovlenie = clearString(data[4]);
+			let gos_organ = clearString(data[3]);
 			if ((urls || domain) && data[0]) {
 				let arr_ip = data[0].split(" | ");
 				let cnt_ip = arr_ip.length;
 				for (let i=0; i<cnt_ip; i++) {
-					if (arr_ip[i].indexOf('/') > -1) console.warn("Error in minor ip, it should not be range:",arr_ip[i]);
+					if (arr_ip[i].indexOf('/') > -1) console.log("Error in minor ip, it should not be range:",clearString(arr_ip[i]));
 					else database.blocked_site_ip[arr_ip[i]] = true;
 				}
 			}
 			if (urls) { //url
-				//if (urls.indexOf(' | ')>-1) console.warn('Complex URL!',urls);
+				//if (urls.indexOf(' | ')>-1) console.log('Complex URL!',urls);
 				let arr_url = urls.split(" | ");
 				/*if (arr_url.length > 1) {
-					//console.warn('Strange URL:',urls);
+					//console.log('Strange URL:',urls);
 					for(let j=1; j<arr_url.length; j++) {
 						arr_url[j] = "http" + arr_url[j];
-						//if (arr_url[j].indexOf(',') > -1) console.warn("Error ',' in URL:",arr_url[j]);
+						//if (arr_url[j].indexOf(',') > -1) console.log("Error ',' in URL:",arr_url[j]);
 					}
 				}*/
 				cnt_records += arr_url.length;
 				for (let i=0; i<arr_url.length; i++) {
 					let url = arr_url[i];
 					if (!domain) { //cover possible csv error
-						domain = extractHostname(url).toLowerCase(); 
-						//console.warn('Error no domain:',row[i]);
+						domain = clearString(extractHostname(url).toLowerCase()); 
+						//console.log('Error no domain:',row[i]);
 					}
 					
 					if (domain != extractHostname(url).toLowerCase()) { //cover known csv bug
-						let url_domain = extractHostname(url).toLowerCase();
-						console.warn('Error in domain:', domain, url_domain);
+						let url_domain = clearString(extractHostname(url).toLowerCase());
+						console.log('Error in domain:', domain, url_domain);
 						if (!database.blocked_domain[domain]) { //Add a record for this domain. It's possibly blocked.
 							database.blocked_domain[domain] = {
 								blocked: false,
@@ -422,7 +425,7 @@ function update_Database(csv, no_save) {
 								urls: [],
 							};
 						}
-						domain = url_domain;
+						domain = clearString(url_domain);
 					}
 					
 					if (!database.blocked_domain[domain]) {
@@ -437,7 +440,7 @@ function update_Database(csv, no_save) {
 					if (url.substr(0,7) == 'http://') url = url.substr(7, url.length-7);
 					else if (url.substr(0,8) == 'https://') url = url.substr(8, url.length-8);
 					else {
-						//console.warn('Bad url:',url); //jj: shouldn't skip non-standard urls
+						//console.log('Bad url:',url); //jj: shouldn't skip non-standard urls
 						continue;
 					}
 					
@@ -445,7 +448,7 @@ function update_Database(csv, no_save) {
 						rec.blocked = true;
 						rec.postanovlenie = postanovlenie;
 						rec.gos_organ = gos_organ;
-						//console.warn('RKN domain inaccuracy:',url);
+						//console.log('RKN domain inaccuracy:',url);
 						continue;
 					}
 					
@@ -460,7 +463,7 @@ function update_Database(csv, no_save) {
 							postanovlenie: postanovlenie,
 							gos_organ: gos_organ,
 						};
-						rec.urls.push(url);
+						rec.urls.push(clearString(url));
 					}
 				}
 			}
@@ -490,7 +493,7 @@ function update_Database(csv, no_save) {
 						if (blocked_date < rec.date) rec.date = blocked_date;
 					}
 					else {
-						//console.warn('Blocked domain & URLs:',domain,real_domain);
+						//console.log('Blocked domain & URLs:',domain,real_domain);
 						rec.date = blocked_date;
 						rec.blocked = true;
 						rec.postanovlenie = postanovlenie;
@@ -504,14 +507,14 @@ function update_Database(csv, no_save) {
 				cnt_records += cnt_ip;
 				for (let i=0; i<cnt_ip; i++) {
 					let ip = arr_ip[i];
-					if (ip.indexOf('/') > -1) database.blocked_ip_range.push(ip);
+					if (ip.indexOf('/') > -1) database.blocked_ip_range.push(clearString(ip));
 					else database.blocked_ip[ip] = true;
 					database.blocked_ip_reason[ip] = {
 						postanovlenie: postanovlenie,
 						gos_organ: gos_organ,
 						date: blocked_date,
 					}
-					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.warn('Bad ip:',ip);
+					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.log('Bad ip:',ip);
 				}
 			}
 		}
@@ -540,10 +543,10 @@ function update_Database(csv, no_save) {
 				if (data.length > 4) { //fix a known bug in the csv file: symbols ";" in url.
 					let restore_url = data.splice(1, data.length - 3).join(';');
 					data.splice(1, 0, restore_url);
-					//console.warn("Error ';' in URL:",restore_url);
+					//console.log("Error ';' in URL:",restore_url);
 				}
 				else { //unknown bug
-					if (data[0]) console.warn('Error: ',row[i]);
+					if (data[0]) console.log('Error: ',row[i]);
 					continue;
 				}
 			}
@@ -555,7 +558,7 @@ function update_Database(csv, no_save) {
 				let arr_ip = data[3].split(",");
 				let cnt_ip = arr_ip.length;
 				for (let i=0; i<cnt_ip; i++) {
-					if (arr_ip[i].indexOf('/') > -1) console.warn("Error in minor ip, it should not be range:",arr_ip[i]);
+					if (arr_ip[i].indexOf('/') > -1) console.log("Error in minor ip, it should not be range:",arr_ip[i]);
 					else database.blocked_site_ip[arr_ip[i]] = true;
 				}
 			}
@@ -563,19 +566,19 @@ function update_Database(csv, no_save) {
 				let arr_url = urls.split(",http"); //and https
 				if (arr_url.length > 1) for(let j=1; j<arr_url.length; j++) {
 					arr_url[j] = "http" + arr_url[j];
-					//if (arr_url[j].indexOf(',') > -1) console.warn("Error ',' in URL:",arr_url[j]);
+					//if (arr_url[j].indexOf(',') > -1) console.log("Error ',' in URL:",arr_url[j]);
 				}
 				cnt_records += arr_url.length;
 				for (let i=0; i<arr_url.length; i++) {
 					let url = arr_url[i];
 					if (!domain) { //cover possible csv error
 						domain = extractHostname(url).toLowerCase(); 
-						//console.warn('Error no domain:',row[i]);
+						//console.log('Error no domain:',row[i]);
 					}
 					
 					if (domain != extractHostname(url).toLowerCase()) { //cover known csv bug
 						let url_domain = extractHostname(url).toLowerCase();
-						//console.warn('Error in domain:', domain, url_domain);
+						//console.log('Error in domain:', domain, url_domain);
 						if (!database.blocked_domain[domain]) { //Add a record for this domain. It's possibly blocked.
 							database.blocked_domain[domain] = {
 								blocked: false,
@@ -598,7 +601,7 @@ function update_Database(csv, no_save) {
 					if (url.substr(0,7) == 'http://') url = url.substr(7, url.length-7);
 					else if (url.substr(0,8) == 'https://') url = url.substr(8, url.length-8);
 					else {
-						//console.warn('Bad url:',url);
+						//console.log('Bad url:',url);
 						continue;
 					}
 					
@@ -633,7 +636,7 @@ function update_Database(csv, no_save) {
 						if (blocked_date < rec.date) rec.date = blocked_date;
 					}
 					else {
-						//console.warn('Blocked domain & URLs:',domain,real_domain);
+						//console.log('Blocked domain & URLs:',domain,real_domain);
 						rec.date = blocked_date;
 						rec.blocked = true;
 					}
@@ -647,7 +650,7 @@ function update_Database(csv, no_save) {
 					let ip = arr_ip[i];
 					if (ip.indexOf('/') > -1) database.blocked_ip_range.push(ip);
 					else database.blocked_ip[ip] = true;
-					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.warn('Bad ip:',ip);
+					//if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !/^\d+\.\d+\.\d+\.\d+\/\d+$/.test(ip)) console.log('Bad ip:',ip);
 				}
 			}
 		}
@@ -662,7 +665,7 @@ function update_Database(csv, no_save) {
 			db_updated_date = localStorage['db_updated_date']
 		}
 		else { //impossible
-			console.warn('Impossible error! Time of DB is unknown!');
+			console.log('Impossible error! Time of DB is unknown!');
 			db_updated_date = (new Date()).getTime();
 			localStorage['db_updated_date'] = db_updated_date;
 		}
@@ -700,7 +703,7 @@ let onUpdateError = function(xhr, readyState, status) {
 	//console.log(readyState,status,xhr.readyState,xhr.status,xhr);
 	if (readyState == 1) return;
 	if (readyState == 0) { //impossible
-		console.warn("request not initialized!");
+		console.log("request not initialized!");
 		return setTimer(30000);
 	}
 	if (readyState == 4) {
@@ -770,7 +773,7 @@ function load_Database_Antizapret() { // https://antizapret.info/api.php
 			load_String_From_URL('https://api.antizapret.info/get.php?item='+makeid()+'.com&type=json', function(txt) {
 				let data = JSON_parse(txt);
 				if (!data.updateTime) { //EXIT
-					console.warn('Antizapret.info is down!',txt);
+					console.log('Antizapret.info is down!',txt);
 					options_hint.is_updating = false;
 					options_hint.update_error = 'Ошибка обновления: неправильный формат!<br>Ответ сервера:<br><textarea cols=30 rows=4>'
 						+txt+'</textarea>';
@@ -829,7 +832,10 @@ if (localStorage.use_httpdns === undefined) localStorage.use_httpdns = 1;
 if (localStorage.check_site_is_online === undefined) localStorage.check_site_is_online = 0;
 if (localStorage.custom_provider_stub === undefined) localStorage.custom_provider_stub = 'warning.rt.ru';
 function check_For_Updates() {
-	if (xhttp) xhttp.abort(); //enough! try again...
+	if (xhttp_outer) {
+		xhttp_outer.abort(); //enough! try again...
+		xhttp_outer = undefined;
+	}
 	options_hint.is_updating = false; options_update();
 	if (!window.navigator.onLine) return setTimer(30000); //pause until connected.
 	let now = (new Date()).getTime();
@@ -896,7 +902,7 @@ let whitelist = {
 				if (domain[0] == '*') whitelist.domain_mask[domain.substr(2,domain.length-2)] = true;
 				else whitelist.domain[domain] = true;
 				if (ip) {
-					if (ip.indexOf('/') > -1) whitelist.ip_range.push(ip);
+					if (ip.indexOf('/') > -1) whitelist.ip_range.push(clearString(ip));
 					else whitelist.ip[ip] = true;
 				}
 			}
