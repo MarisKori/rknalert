@@ -60,6 +60,43 @@ function update_whois(whois) {
 	whois_element.innerHTML = 'Возраст: ' + whois.result + '<br>';
 }
 
+function clearString(str) {
+  return str.length < 12 ? str : (' ' + str).slice(1);
+}
+
+function antizapretSet(text) {
+	document.getElementById('antizapret').innerText = text;
+}
+function antizapretUpdate() {
+	let now = (new Date()).getTime();
+	if (now - background.localStorage.az_tm < 60000 && background.localStorage.az_data) {
+		setTimeout(e=>antizapretSet(background.localStorage.az_data),0);
+		return;
+	}
+	let xhr = new XMLHttpRequest();
+	xhr.open("GET", "https://antizapret.prostovpn.org/donate.html", true);
+	xhr.onload = function (e) {
+		if (xhr.readyState === 4) {
+			if (xhr.status === 200) {
+				//console.log(xhr.responseText);
+				let m = xhr.responseText.match(/<p>Собрано: ([^<]*)<\/p>/);
+				if (!m) return;
+				let txt = m[1].trim().replace('<','&lt;');
+				if (txt.length > 50) return;
+				background.localStorage.az_data = txt;
+				background.localStorage.az_tm = now;
+				antizapretSet(clearString(txt));
+			} else {
+				//console.error(xhr.statusText);
+			}
+		}
+	};
+	xhr.onerror = function (e) {
+		//console.error(xhr.statusText);
+	};
+	xhr.send(null);	
+}
+
 function popup_update() {
 	let hint = background.icon_hint;
 	//announcement
@@ -78,7 +115,8 @@ function popup_update() {
 			+ hint.hostname + '</span><span id="check_site_result">'+is_up_status+'</span></b>');
 	}
 	//fishing
-	if (hint.is_fishing) add('<font color=red><b>Фишинговый сайт!</b></font>');
+	if (hint.official) add('<font color=#77f><b>Официальный сайт</b></font>');
+	else if (hint.is_fishing) add('<font color=red><b>Фишинговый сайт!</b></font>');
 	else if (hint.is_personal_mirror) add('<font color=#77f><b>Персональное зеркало</b></font>');
 	else if (hint.not_fishing) add('<font color=#77f><b>Официальное зеркало</b></font>');
 	//whois
@@ -115,6 +153,10 @@ function popup_update() {
 	else if (hint.is_whitelist_ip) add('<span class=whitelist>ip-адрес в белом списке РКН</span>');
 	else if (hint.is_whitelist_ip_local) add('<span class=whitelist>Локальный ip-адрес</span>');
 	else if (hint.permanently_blocked) add('<span class=permanently_blocked>Вечная блокировка</span>');
+	if (background.localStorage.show_donate==1) {
+		html+='<span id="antizapret" style="margin-top:2px;display:block;"></span>';
+		antizapretUpdate();
+	}
 	div_data.innerHTML = html;
 }
 
