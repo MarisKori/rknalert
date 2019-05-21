@@ -142,6 +142,12 @@ document.addEventListener('DOMContentLoaded', function () {
 	check_site_only_if_error.addEventListener('change', function(e) {
 		background.localStorage.check_site_only_if_error = e.target.checked?1:0;
 	});
+
+	let show_donate = document.getElementsByName('show_donate')[0];
+	show_donate.checked = background.localStorage.show_donate==1;
+	show_donate.addEventListener('change', function(e) {
+		background.localStorage.show_donate = e.target.checked?1:0;
+	});
 	
 	custom_provider_stub = document.getElementsByName('custom_provider_stub')[0];
 	custom_provider_stub.value = background.localStorage.custom_provider_stub;

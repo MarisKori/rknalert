@@ -60,7 +60,7 @@ body{font-family:Arial}
 		<p><img src="/images/circ_yellow_red_16.png"> сайт заблокирован по ip.
 		<p><img src="/images/circ_green_yellow_16.png"> сайт заблокирован у некоторых провайдеров,
 			блокирующих исключительно по ip, и будет доступен у остальных провайдеров.
-		<p><img src="/images/circ_whitelist_16.png"> сайт находится в белом списке РКН, и провайдеры не имеют право его блокировать.
+		<p><img src="/images/circ_whitelist_16.png"> сайт находится в белом списке РКН, и провайдерам не рекомендуется его блокировать.
 		<p><img src="/images/circ_fishing_16.png"> фишинговый сайт - лучше не вводить там свои пароли.
 		<p><img src="/images/circ_fishingb_16.png"> заблокированный фишинговый сайт - лучше не вводить там свои пароли.
 		<p><b><u>Цвет ip:</u></b>
@@ -71,9 +71,9 @@ body{font-family:Arial}
 			<font color="#0000ff"><b>(синий)</b></font> - прокси.
 		<p>
 			<img src="/images/ok.png" alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
-				Сайт доступен из США.<br>
+				Сайт доступен из другого места.<br>
 			<img src="/images/down.png" alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит, но не факт.">
-				Сайт не доступен из США (скорее всего, лежит).<br>
+				Сайт не доступен из другого места (скорее всего, лежит).<br>
 			<img src="/images/unknown_16.png" alt="Невозможно проверить доступность сайта." title="Невозможно проверить доступность сайта.">
 				Невозможно проверить доступность сайта.<br>
 	</div>
@@ -115,7 +115,7 @@ body{font-family:Arial}
 		</select>
 		<img src="/images/info_17.png" align=absmiddle alt="Выберите тот DNS, которым пользуется браузер." title="Выберите тот DNS, которым пользуется браузер.">
 		<br>
-		<input type="checkbox" name="check_site_is_online"> Проверять доступность сайта из других мест (США).
+		<input type="checkbox" name="check_site_is_online"> Проверять доступность сайта из другого места.
 			<img src="/images/ok.png" align=absmiddle alt="Так показывается, что сайт доступен." title="Так показывается, что сайт доступен.">
 			<img src="/images/down.png" align=absmiddle alt="А так показывается, что сайт лежит." title="А так показывается, что сайт лежит."><br>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="check_site_only_if_error"> Проверть доступность только если сайт не грузится.
@@ -124,6 +124,8 @@ body{font-family:Arial}
 
 		<p>Укажите заглушку своего провайдера (не обязательно):<br>
 		<input name="custom_provider_stub" size=70><br>
+		
+		<p><input type="checkbox" name="show_donate"> Показывать прогресс доната на antizapret.prostovpn.org
 	</div>
 	<div class="tabContent">
 		<div class=about>
